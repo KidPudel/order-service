@@ -1,0 +1,17 @@
+option go_package="github.com/KidPudel/order-service/proto/order";
+
+package order;
+
+service Order {
+	rpc MakeOrder(OrderInfo) returns (OrderAcknowledgment) {}
+}
+
+message OrderInfo {
+	required uint32 type = 1;
+	required uint32 amount = 2;
+	optional string comment = 3;
+}
+
+message OrderAcknowledgment {
+	required string response = 1;
+}
