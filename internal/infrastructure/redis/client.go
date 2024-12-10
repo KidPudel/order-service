@@ -2,17 +2,17 @@ package redis
 
 import "github.com/redis/go-redis/v9"
 
-type Redis struct {
-	client *redis.Client
+type RedisClient struct {
+	Client *redis.Client
 }
 
-func NewRedis() Redis {
+func NewRedis() RedisClient {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "",
 		Protocol: 0, // use default DB
 	})
-	return Redis{
-		client: rdb,
+	return RedisClient{
+		Client: rdb,
 	}
 }

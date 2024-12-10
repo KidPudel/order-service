@@ -14,7 +14,7 @@ const (
 )
 
 type OrderRepository interface {
-	AddOrder(ctx context.Context, orderInfo orderModel.OrderInfo)
+	AddOrder(ctx context.Context, orderInfo orderModel.OrderInfo) error
 }
 
 type OrderUsecaseOptions struct {
@@ -55,6 +55,10 @@ func (u OrderUsecase) orderWorker(ctx context.Context) {
 		case orderRequest := <-u.orderRequestQueue:
 			fmt.Println(orderRequest)
 			// read to redis
+			err := u.options.OrderRepository.AddOrder(ctx, orderRequest)
+			if err != nil {
+				log.Println("failed to add to redis: ", err)
+			}
 			// send to delivery (shortcut for sake of mvp)
 		case <-ctx.Done():
 			log.Println("done handling your stupid orders, we are quiting")

@@ -8,6 +8,8 @@ import (
 	"google.golang.org/grpc"
 
 	handlers "github.com/KidPudel/order-service/internal/adapters/grpc"
+	orderRepositories "github.com/KidPudel/order-service/internal/adapters/repositories/order"
+	"github.com/KidPudel/order-service/internal/infrastructure/redis"
 	orderUsecases "github.com/KidPudel/order-service/internal/usecases/order"
 	pb "github.com/KidPudel/order-service/proto/order"
 )
@@ -23,9 +25,14 @@ func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 
+	// db
+	redisClient := redis.NewRedis()
+	// repositories
+	orderRepository := orderRepositories.NewOrderRepostory(redisClient)
+
 	// usecases
 	orderUsecase := orderUsecases.NewOrderUsecase(ctx, orderUsecases.OrderUsecaseOptions{
-		OrderRepository: nil,
+		OrderRepository: orderRepository,
 	})
 
 	// handlers
