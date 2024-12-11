@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"log"
 
+	"google.golang.org/protobuf/proto"
+
 	orderModel "github.com/KidPudel/order-service/internal/entities/order"
+	pbDelivery "github.com/KidPudel/order-service/proto/delivery"
 )
 
 const (
@@ -19,6 +22,7 @@ type OrderRepository interface {
 
 type OrderUsecaseOptions struct {
 	OrderRepository OrderRepository
+	DeliveryClient  pbDelivery.DeliveryClient
 }
 
 type OrderUsecase struct {
@@ -60,6 +64,12 @@ func (u OrderUsecase) orderWorker(ctx context.Context) {
 				log.Println("failed to add to redis: ", err)
 			}
 			// send to delivery (shortcut for sake of mvp)
+			comment, _ := orderRequest.Comment.Get()
+			u.options.DeliveryClient.SendToDelivery(ctx, &pbDelivery.OrderInfo{
+				Type:    proto.Uint32(orderRequest.Type),
+				Amount:  proto.Uint32(orderRequest.Amount),
+				Comment: proto.String(comment),
+			})
 		case <-ctx.Done():
 			log.Println("done handling your stupid orders, we are quiting")
 			break

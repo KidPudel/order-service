@@ -11,7 +11,8 @@ import (
 	orderRepositories "github.com/KidPudel/order-service/internal/adapters/repositories/order"
 	"github.com/KidPudel/order-service/internal/infrastructure/redis"
 	orderUsecases "github.com/KidPudel/order-service/internal/usecases/order"
-	pb "github.com/KidPudel/order-service/proto/order"
+	pbDelivery "github.com/KidPudel/order-service/proto/delivery"
+	pbOrder "github.com/KidPudel/order-service/proto/order"
 )
 
 func main() {
@@ -23,16 +24,26 @@ func main() {
 	// grpc server!
 	server := grpc.NewServer()
 
+	// grpc client
+	clientConn, err := grpc.NewClient("localhost:50051")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	client := pbDelivery.NewDeliveryClient(clientConn)
+
 	ctx, cancel := context.WithCancel(context.Background())
 
 	// db
 	redisClient := redis.NewRedis()
+
 	// repositories
 	orderRepository := orderRepositories.NewOrderRepostory(redisClient)
 
 	// usecases
 	orderUsecase := orderUsecases.NewOrderUsecase(ctx, orderUsecases.OrderUsecaseOptions{
 		OrderRepository: orderRepository,
+		DeliveryClient:  client,
 	})
 
 	// handlers
@@ -40,7 +51,7 @@ func main() {
 		OrderUsecase: orderUsecase,
 	}
 
-	pb.RegisterOrderServer(server, handlers.NewOrderServer(opts))
+	pbOrder.RegisterOrderServer(server, handlers.NewOrderServer(opts))
 
 	if err := server.Serve(listenConfig); err != nil {
 		log.Fatal("failed to serve")
