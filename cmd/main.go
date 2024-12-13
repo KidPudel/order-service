@@ -6,6 +6,7 @@ import (
 	"net"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	handlers "github.com/KidPudel/order-service/internal/adapters/grpc"
 	orderRepositories "github.com/KidPudel/order-service/internal/adapters/repositories/order"
@@ -25,11 +26,12 @@ func main() {
 	server := grpc.NewServer()
 
 	// grpc client
-	clientConn, err := grpc.NewClient("localhost:50051")
+	clientConn, err := grpc.NewClient("localhost:50052", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// client stub
 	client := pbDelivery.NewDeliveryClient(clientConn)
 
 	ctx, cancel := context.WithCancel(context.Background())

@@ -65,11 +65,16 @@ func (u OrderUsecase) orderWorker(ctx context.Context) {
 			}
 			// send to delivery (shortcut for sake of mvp)
 			comment, _ := orderRequest.Comment.Get()
-			u.options.DeliveryClient.SendToDelivery(ctx, &pbDelivery.OrderInfo{
+			ack, err := u.options.DeliveryClient.SendToDelivery(ctx, &pbDelivery.OrderInfo{
 				Type:    proto.Uint32(orderRequest.Type),
 				Amount:  proto.Uint32(orderRequest.Amount),
 				Comment: proto.String(comment),
 			})
+			if err != nil {
+				log.Println("failed to send to delivery")
+			} else {
+				log.Println(ack)
+			}
 		case <-ctx.Done():
 			log.Println("done handling your stupid orders, we are quiting")
 			break
